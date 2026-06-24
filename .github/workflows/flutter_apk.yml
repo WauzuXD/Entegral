@@ -1,0 +1,52 @@
+name: Build Flutter APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'
+          channel: 'stable'
+      
+      - name: Install dependencies
+        working-directory: ./entegral_mobile
+        run: flutter pub get
+      
+      - name: Build APK
+        working-directory: ./entegral_mobile
+        run: flutter build apk --release --split-per-abi
+      
+      - name: Upload APK (arm64-v8a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: entegral-arm64-v8a
+          path: entegral_mobile/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+      
+      - name: Upload APK (armeabi-v7a)
+        uses: actions/upload-artifact@v4
+        with:
+          name: entegral-armeabi-v7a
+          path: entegral_mobile/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+      
+      - name: Upload APK (x86_64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: entegral-x86_64
+          path: entegral_mobile/build/app/outputs/flutter-apk/app-x86_64-release.apk
